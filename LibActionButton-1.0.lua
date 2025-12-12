@@ -44,6 +44,7 @@ local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
+local Midnight = (select(4, GetBuildInfo())) >= 120000
 
 local DisableOverlayGlow = WoWClassic or WoWBCC or WoWWrath
 
@@ -1276,7 +1277,7 @@ function InitializeEventHandler()
 	lib.eventFrame:RegisterEvent("START_AUTOREPEAT_SPELL")
 	lib.eventFrame:RegisterEvent("STOP_AUTOREPEAT_SPELL")
 	lib.eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
-	lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
+
 	lib.eventFrame:RegisterEvent("PET_STABLE_UPDATE")
 	lib.eventFrame:RegisterEvent("PET_STABLE_SHOW")
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_CHARGES")
@@ -1291,6 +1292,12 @@ function InitializeEventHandler()
 		lib.eventFrame:RegisterEvent("UNIT_ENTERED_VEHICLE")
 		lib.eventFrame:RegisterEvent("UNIT_EXITED_VEHICLE")
 		lib.eventFrame:RegisterEvent("COMPANION_UPDATE")
+	end
+
+	if Midnight then
+		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
+	else
+		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
 	end
 
 	-- With those two, do we still need the ACTIONBAR equivalents of them?
