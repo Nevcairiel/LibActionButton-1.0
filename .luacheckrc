@@ -98,9 +98,11 @@ read_globals = {
 
 	-- FrameXML API
 	"ActionBarController_UpdateAllSpellHighlights",
+	"ActionButton_ApplyCooldown",
 	"ActionButton_HideOverlayGlow",
 	"ActionButton_UpdateFlyout",
 	"AssistedCombatManager",
+	"ClearActionButtonCooldowns",
 	"CooldownFrame_Clear",
 	"CooldownFrame_Set",
 	"EventRegistry",
