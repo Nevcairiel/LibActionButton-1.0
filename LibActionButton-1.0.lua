@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 135
+local MINOR_VERSION = 136
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -2080,10 +2080,10 @@ function UpdateCooldown(self)
 		cooldownInfo.modRate = auraData.timeMod
 		cooldownInfo.isEnabled = 1
 		chargeInfo = {}
-		chargeInfo.charges = auraData.charges
+		chargeInfo.currentCharges = auraData.charges
 		chargeInfo.maxCharges = auraData.maxCharges
-		chargeInfo.chargeStart = currentTime * 0.001
-		chargeInfo.chargeDuration = auraData.duration * 0.001
+		chargeInfo.cooldownStartTime = currentTime * 0.001
+		chargeInfo.cooldownDuration = auraData.duration * 0.001
 		chargeInfo.chargeModRate = auraData.timeMod
 	else
 		cooldownInfo = self:GetCooldownInfo() or defaultCooldownInfo
@@ -2107,7 +2107,7 @@ function UpdateCooldown(self)
 	else
 		local locStart, locDuration = lossOfControlInfo.startTime, lossOfControlInfo.duration
 		local start, duration, enable, modRate = cooldownInfo.startTime, cooldownInfo.duration, cooldownInfo.isEnabled, cooldownInfo.modRate
-		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = chargeInfo.charges, chargeInfo.maxCharges, chargeInfo.chargeStart, chargeInfo.chargeDuration, chargeInfo.chargeModRate
+		local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = chargeInfo.currentCharges, chargeInfo.maxCharges, chargeInfo.cooldownStartTime, chargeInfo.cooldownDuration, chargeInfo.chargeModRate
 
 		local hasLocCooldown = locStart and locDuration and locStart > 0 and locDuration > 0
 		local hasCooldown = enable and start and duration and start > 0 and duration > 0
