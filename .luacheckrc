@@ -37,6 +37,7 @@ read_globals = {
 
 	-- API functions
 	"C_Container.GetItemCooldown",
+	"C_DurationUtil.CreateDuration",
 	"C_EquipmentSet.PickupEquipmentSet",
 	"ClearCursor",
 	"CreateFrame",
