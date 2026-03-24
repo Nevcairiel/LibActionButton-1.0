@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 143
+local MINOR_VERSION = 144
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1964,8 +1964,8 @@ function UpdateUsable(self)
 
 	if WoWRetail and self._state_type == "action" then
 		local isLevelLinkLocked = C_LevelLink.IsActionLocked(self._state_action)
-		if not self.icon:IsDesaturated() then
-			self.icon:SetDesaturated(isLevelLinkLocked)
+		if isLevelLinkLocked then
+			self.icon:SetDesaturated(true)
 		end
 
 		if self.LevelLinkLockIcon then
