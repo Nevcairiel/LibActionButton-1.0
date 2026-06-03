@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 146
+local MINOR_VERSION = 147
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -44,6 +44,7 @@ local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
+local WoWMists = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC)
 local Midnight = (select(4, GetBuildInfo())) >= 120000
 
 local UseVanillaOverlayGlow = false -- WoWRetail and ActionButtonSpellAlertManager
@@ -226,7 +227,7 @@ function lib:CreateButton(id, name, header, config)
 
 	local button = setmetatable(CreateFrame("CheckButton", name, header, "ActionButtonTemplate, SecureActionButtonTemplate"), Generic_MT)
 	button:RegisterForDrag("LeftButton", "RightButton")
-	if WoWRetail or WoWBCC then
+	if WoWRetail or WoWBCC or WoWMists then
 		button:RegisterForClicks("AnyDown", "AnyUp")
 	else
 		button:RegisterForClicks("AnyUp")
@@ -1225,7 +1226,7 @@ function Generic:UpdateConfig(config)
 	UpdateHotkeys(self)
 	UpdateGrid(self)
 	self:UpdateAction(true)
-	if not (WoWRetail or WoWBCC) then
+	if not (WoWRetail or WoWBCC or WoWMists) then
 		self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
 	end
 end
@@ -1295,7 +1296,7 @@ function InitializeEventHandler()
 		lib.eventFrame:RegisterEvent("COMPANION_UPDATE")
 	end
 
-	if Midnight or WoWBCC then
+	if Midnight or WoWBCC or WoWMists then
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
 	else
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
