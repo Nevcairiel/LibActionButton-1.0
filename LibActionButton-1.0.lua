@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 150
+local MINOR_VERSION = 151
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1845,7 +1845,7 @@ function Update(self)
 		self.icon:SetTexture(texture)
 		self.icon:Show()
 		self.rangeTimer = - 1
-		if WoWRetail then
+		if not WoWClassic then
 			if not self.MasqueSkinned then
 				self.SlotBackground:Hide()
 				if self.config.hideElements.border then
@@ -1888,7 +1888,7 @@ function Update(self)
 		else
 			self.HotKey:SetVertexColor(unpack(self.config.text.hotkey.color))
 		end
-		if WoWRetail then
+		if not WoWClassic then
 			if not self.MasqueSkinned then
 				self.SlotBackground:Show()
 				if self.config.hideElements.borderIfEmpty then
