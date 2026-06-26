@@ -45,7 +45,6 @@ local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
 local WoWMists = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC)
-local Midnight = (select(4, GetBuildInfo())) >= 120000
 
 local UseVanillaOverlayGlow = false -- WoWRetail and ActionButtonSpellAlertManager
 local DisableOverlayGlow = WoWClassic or WoWBCC or WoWWrath
@@ -1303,7 +1302,7 @@ function InitializeEventHandler()
 		lib.eventFrame:RegisterEvent("COMPANION_UPDATE")
 	end
 
-	if Midnight or WoWBCC or WoWMists then
+	if WoWRetail or WoWBCC or WoWMists then
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
 	else
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
@@ -2635,7 +2634,7 @@ end
 local GetActionCount = GetActionCount
 
 -- the remaining uses of GetActionCount can't deal with secrets, so disable on Midnight
-if Midnight then
+if WoWRetail then
 	GetActionCount = function() return 0 end
 end
 
