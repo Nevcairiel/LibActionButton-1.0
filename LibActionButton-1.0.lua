@@ -44,7 +44,6 @@ local WoWRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
 local WoWClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
 local WoWBCC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 local WoWWrath = (WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC)
-local WoWMists = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC)
 
 local UseVanillaOverlayGlow = false -- WoWRetail and ActionButtonSpellAlertManager
 local DisableOverlayGlow = WoWClassic or WoWBCC or WoWWrath
@@ -226,7 +225,7 @@ function lib:CreateButton(id, name, header, config)
 
 	local button = setmetatable(CreateFrame("CheckButton", name, header, "ActionButtonTemplate, SecureActionButtonTemplate"), Generic_MT)
 	button:RegisterForDrag("LeftButton", "RightButton")
-	if WoWRetail or WoWBCC or WoWMists then
+	if not WoWClassic then
 		button:RegisterForClicks("AnyDown", "AnyUp")
 	else
 		button:RegisterForClicks("AnyUp")
@@ -1232,7 +1231,7 @@ function Generic:UpdateConfig(config)
 	UpdateHotkeys(self)
 	UpdateGrid(self)
 	self:UpdateAction(true)
-	if not (WoWRetail or WoWBCC or WoWMists) then
+	if WoWClassic then
 		self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
 	end
 end
@@ -1302,7 +1301,7 @@ function InitializeEventHandler()
 		lib.eventFrame:RegisterEvent("COMPANION_UPDATE")
 	end
 
-	if WoWRetail or WoWBCC or WoWMists then
+	if not WoWClassic then
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_SKILL_LINE")
 	else
 		lib.eventFrame:RegisterEvent("LEARNED_SPELL_IN_TAB")
