@@ -144,7 +144,6 @@ local DefaultConfig = {
 	},
 	keyBoundTarget = false,
 	keyBoundClickButton = "LeftButton",
-	clickOnDown = false,
 	cooldownCount = nil, -- nil: use cvar, true/false: enable/disable
 	lossOfControlCooldown = true,
 	flyoutDirection = "UP",
@@ -225,11 +224,7 @@ function lib:CreateButton(id, name, header, config)
 
 	local button = setmetatable(CreateFrame("CheckButton", name, header, "ActionButtonTemplate, SecureActionButtonTemplate"), Generic_MT)
 	button:RegisterForDrag("LeftButton", "RightButton")
-	if not WoWClassic then
-		button:RegisterForClicks("AnyDown", "AnyUp")
-	else
-		button:RegisterForClicks("AnyUp")
-	end
+	button:RegisterForClicks("AnyDown", "AnyUp")
 
 	-- Frame Scripts
 	button:SetScript("OnEnter", Generic.OnEnter)
@@ -1231,9 +1226,6 @@ function Generic:UpdateConfig(config)
 	UpdateHotkeys(self)
 	UpdateGrid(self)
 	self:UpdateAction(true)
-	if WoWClassic then
-		self:RegisterForClicks(self.config.clickOnDown and "AnyDown" or "AnyUp")
-	end
 end
 
 -----------------------------------------------------------
