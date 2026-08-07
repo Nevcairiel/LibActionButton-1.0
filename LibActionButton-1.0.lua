@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 153
+local MINOR_VERSION = 154
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -2686,7 +2686,7 @@ Action.GetSpellId               = function(self)
 		elseif subType == "item" then
 			return nil -- item macros seems to return bogus values we can't support
 		else
-			return nil -- what else is there? spell id is only used for highlights and cast bars
+			return (GetMacroSpell(id)) -- classic does not use the subType, so keep this as a fallback
 		end
 	end
 end
