@@ -95,6 +95,9 @@ local Macro_MT = {__index = Macro}
 local Custom = setmetatable({}, {__index = Generic})
 local Custom_MT = {__index = Custom}
 
+local Click = setmetatable({}, {__index = Generic})
+local Click_MT = {__index = Click}
+
 local type_meta_map = {
 	empty  = Generic_MT,
 	action = Action_MT,
@@ -102,6 +105,7 @@ local type_meta_map = {
 	spell  = Spell_MT,
 	item   = Item_MT,
 	macro  = Macro_MT,
+	click  = Click_MT,
 	custom = Custom_MT
 }
 
@@ -374,7 +378,7 @@ function SetupSecureSnippets(button)
 		local state = self:GetAttribute("state")
 		local type = self:GetAttribute("type")
 		-- if the button is empty, we can't drag anything off it
-		if type == "empty" or type == "custom" then
+		if type == "empty" or type == "custom" or type == "click" then
 			return false
 		end
 		-- Get the value for the action attribute
@@ -400,7 +404,7 @@ function SetupSecureSnippets(button)
 		if not kind or not value then return false end
 		local state = self:GetAttribute("state")
 		local buttonType, buttonAction = self:GetAttribute("type"), nil
-		if buttonType == "custom" then return false end
+		if buttonType == "custom" or buttonType == "click" then return false end
 		-- action buttons can do their magic themself
 		-- for all other buttons, we'll need to update the content now
 		if buttonType ~= "action" and buttonType ~= "pet" then
@@ -594,7 +598,7 @@ function Generic:SetStateFromHandlerInsecure(state, kind, action)
 	if kind ~= "empty" and action == nil then
 		error("SetStateAction: an action is required for non-empty states", 2)
 	end
-	if kind ~= "custom" and action ~= nil and type(action) ~= "number" and type(action) ~= "string" or (kind == "custom" and type(action) ~= "table") then
+	if (kind ~= "custom" and action ~= nil and type(action) ~= "number" and type(action) ~= "string" or (kind == "custom" and type(action) ~= "table")) and (kind ~= "click" and action ~= nil and type(action) ~= "number" and type(action) ~= "string" or (kind == "click" and type(action) ~= "table")) then
 		error("SetStateAction: invalid action data type, only strings and numbers allowed", 2)
 	end
 
@@ -2864,6 +2868,25 @@ Custom.IsUnitInRange           = function(self, unit) return nil end
 Custom.SetTooltip              = function(self) return GameTooltip:SetText(self._state_action.tooltip) end
 Custom.GetSpellId              = function(self) return nil end
 Custom.RunCustom               = function(self, unit, button) return self._state_action.func(self, unit, button) end
+
+-----------------------------------------------------------
+--- Click Button
+Click.HasAction                = function(self) return true end
+Click.GetActionText            = function(self) return "" end
+Click.GetTexture               = function(self) return self._state_action.texture end
+Click.GetCharges               = function(self) return nil end
+Click.GetCount                 = function(self) return 0 end
+Click.GetCooldown              = function(self) return nil end
+Click.IsAttack                 = function(self) return nil end
+Click.IsEquipped               = function(self) return nil end
+Click.IsCurrentlyActive        = function(self) return nil end
+Click.IsAutoRepeat             = function(self) return nil end
+Click.IsUsable                 = function(self) return true end
+Click.IsConsumableOrStackable  = function(self) return nil end
+Click.IsUnitInRange            = function(self, unit) return nil end
+Click.SetTooltip               = function(self) return GameTooltip:SetText(self._state_action.tooltip) end
+Click.GetSpellId               = function(self) return nil end
+Click.GetPassiveCooldownSpellID = function(self) return nil end
 
 --- WoW Classic overrides
 if DisableOverlayGlow then
