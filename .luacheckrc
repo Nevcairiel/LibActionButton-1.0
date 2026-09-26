@@ -6,6 +6,7 @@ exclude_files = {
 
 ignore = {
 	"211/_.*", -- Unused local variable starting with _
+	"211/WoW.*", -- Unused local variable starting with WoW (version constants)
 	"212", -- unused argument
 	"542", -- empty if branch
 }
