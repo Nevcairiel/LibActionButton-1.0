@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 159
+local MINOR_VERSION = 160
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -56,7 +56,7 @@ local WoWClassic = not WoWMainline
 
 -- Features
 local Feat_UseVanillaOverlayGlow = false -- WoWRetail and ActionButtonSpellAlertManager
-local Feat_DisableOverlayGlow = WoWClassic or WoWClassicBCC or WoWClassicWrath
+local Feat_DisableOverlayGlow = WoWClassicEra or WoWClassicBCC or WoWClassicWrath
 local Feat_UseCustomFlyout = true
 local Feat_ButtonCastBars = WoWMainline
 local Feat_CooldownDurationObject = WoWMainline
