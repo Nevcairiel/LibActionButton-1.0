@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 157
+local MINOR_VERSION = 158
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -57,7 +57,7 @@ local WoWClassic = not WoWMainline
 -- Features
 local Feat_UseVanillaOverlayGlow = false -- WoWRetail and ActionButtonSpellAlertManager
 local Feat_DisableOverlayGlow = WoWClassic or WoWClassicBCC or WoWClassicWrath
-local Feat_UseCustomFlyout = WoWMainline or (FlyoutButtonMixin and not ActionButton_UpdateFlyout)
+local Feat_UseCustomFlyout = true
 local Feat_ButtonCastBars = WoWMainline
 local Feat_CooldownDurationObject = WoWMainline
 local Feat_Secrets = WoWMainline
@@ -2397,53 +2397,7 @@ function UpdatedAssistedHighlightFrame(self)
 	end
 end
 
--- Hook UpdateFlyout so we can use the blizzy templates
-if ActionButton_UpdateFlyout then
-	hooksecurefunc("ActionButton_UpdateFlyout", function(self, ...)
-		if ButtonRegistry[self] then
-			UpdateFlyout(self)
-		end
-	end)
-
-	function UpdateFlyout(self)
-		-- disabled FlyoutBorder/BorderShadow, those are not handled by LBF and look terrible
-		if self.FlyoutBorder then
-			self.FlyoutBorder:Hide()
-		end
-		self.FlyoutBorderShadow:Hide()
-		if self._state_type == "action" then
-			-- based on ActionButton_UpdateFlyout in ActionButton.lua
-			local actionType = GetActionInfo(self._state_action)
-			if actionType == "flyout" then
-
-				local isFlyoutShown = SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self
-				local arrowDistance = isFlyoutShown and 1 or 4
-
-				-- Update arrow
-				self.FlyoutArrow:Show()
-				self.FlyoutArrow:ClearAllPoints()
-				local direction = self:GetAttribute("flyoutDirection")
-				if direction == "LEFT" then
-					self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
-					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 90 or 270)
-				elseif direction == "RIGHT" then
-					self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
-					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 270 or 90)
-				elseif direction == "DOWN" then
-					self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
-					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 0 or 180)
-				else
-					self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
-					SetClampedTextureRotation(self.FlyoutArrow, isFlyoutShown and 180 or 0)
-				end
-
-				-- return here, otherwise flyout is hidden
-				return
-			end
-		end
-		self.FlyoutArrow:Hide()
-	end
-elseif FlyoutButtonMixin and Feat_UseCustomFlyout then
+if FlyoutButtonMixin and Feat_UseCustomFlyout then
 	function Generic:GetPopupDirection()
 		return self:GetAttribute("flyoutDirection") or "UP"
 	end
