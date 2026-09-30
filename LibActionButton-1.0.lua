@@ -745,7 +745,6 @@ function Generic:GetIsPingable()
 				isPingable = true
 			end
 		end
-		print(actionType, isPingable)
 	elseif self._state_type == "spell" or self._state_type == "item" then
 		isPingable = true
 	end
