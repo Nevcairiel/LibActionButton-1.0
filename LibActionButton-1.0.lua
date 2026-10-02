@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 162
+local MINOR_VERSION = 163
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1498,23 +1498,26 @@ function OnEvent(frame, event, arg1, ...)
 			UpdateUsable(button)
 		end
 	elseif event == "ACTIONBAR_UPDATE_COOLDOWN" then
+		local tooltipOwner = GameTooltip_GetOwnerForbidden()
 		for button in next, ActionButtons do
 			UpdateCooldown(button)
-			if GameTooltip_GetOwnerForbidden() == button then
+			if tooltipOwner == button then
 				UpdateTooltip(button)
 			end
 		end
 	elseif event == "SPELL_UPDATE_COOLDOWN" then
+		local tooltipOwner = GameTooltip_GetOwnerForbidden()
 		for button in next, NonActionButtons do
 			UpdateCooldown(button)
-			if GameTooltip_GetOwnerForbidden() == button then
+			if tooltipOwner == button then
 				UpdateTooltip(button)
 			end
 		end
 	elseif event == "LOSS_OF_CONTROL_ADDED" then
+		local tooltipOwner = GameTooltip_GetOwnerForbidden()
 		for button in next, ActiveButtons do
 			UpdateCooldown(button)
-			if GameTooltip_GetOwnerForbidden() == button then
+			if tooltipOwner == button then
 				UpdateTooltip(button)
 			end
 		end
