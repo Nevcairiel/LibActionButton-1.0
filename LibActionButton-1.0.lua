@@ -1409,6 +1409,10 @@ function InitializeEventHandler()
 		lib.eventFrame:RegisterUnitEvent("UNIT_SPELLCAST_EMPOWER_STOP", "player")
 	end
 
+	lib.eventFrame:RegisterEvent("PET_BAR_UPDATE")
+	lib.eventFrame:RegisterUnitEvent("UNIT_FLAGS", "pet")
+	lib.eventFrame:RegisterUnitEvent("UNIT_AURA", "pet")
+
 	if Feat_UseCustomFlyout then
 		lib.eventFrame:RegisterEvent("PLAYER_LOGIN")
 		lib.eventFrame:RegisterEvent("SPELLS_CHANGED")
@@ -1491,6 +1495,13 @@ function OnEvent(frame, event, arg1, ...)
 		ForAllButtons(UpdateHotkeys)
 	elseif event == "PLAYER_TARGET_CHANGED" then
 		UpdateRangeTimer()
+	elseif event == "UNIT_FLAGS" or event == "UNIT_AURA" or event == "PET_BAR_UPDATE" then
+		-- pet actions can change action button state
+		for button in next, ActiveButtons do
+			button.flashDirty = true
+			button.stateDirty = true
+			button:CheckNeedsUpdate()
+		end
 	elseif event == "ACTIONBAR_UPDATE_STATE" then
 		for button in next, ActionButtonsNonUI do
 			UpdateButtonState(button)
