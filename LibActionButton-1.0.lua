@@ -2295,7 +2295,7 @@ end
 
 function StartFlash(self)
 	self.flashing = 1
-	self.flashTime = 0
+	self.flashtime = 0
 	UpdateButtonState(self)
 end
 
