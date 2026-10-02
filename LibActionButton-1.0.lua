@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 163
+local MINOR_VERSION = 164
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -77,6 +77,7 @@ lib.actionButtons = lib.actionButtons or {}
 lib.nonActionButtons = lib.nonActionButtons or {}
 lib.actionButtonsNonUI = lib.actionButtonsNonUI or {}
 lib.onUpdateButtons = lib.onUpdateButtons or {}
+lib.buttonsByAction = lib.buttonsByAction or {}
 
 lib.NumChargeCooldowns = lib.NumChargeCooldowns or 0
 
@@ -118,7 +119,7 @@ local type_meta_map = {
 	custom = Custom_MT
 }
 
-local ButtonRegistry, ActiveButtons, ActionButtons, NonActionButtons, ActionButtonsNonUI, OnUpdateButtons = lib.buttonRegistry, lib.activeButtons, lib.actionButtons, lib.nonActionButtons, lib.actionButtonsNonUI, lib.onUpdateButtons
+local ButtonRegistry, ActiveButtons, ActionButtons, NonActionButtons, ActionButtonsNonUI, OnUpdateButtons, ButtonsByAction = lib.buttonRegistry, lib.activeButtons, lib.actionButtons, lib.nonActionButtons, lib.actionButtonsNonUI, lib.onUpdateButtons, lib.buttonsByAction
 
 local Update, UpdateButtonState, UpdateUsable, UpdateCount, UpdateCooldown, UpdateCooldownNumberHidden, UpdateTooltip, UpdateNewAction, UpdateSpellHighlight, ClearNewActionHighlight, UpdateAssistedCombatRotationFrame, UpdatedAssistedHighlightFrame
 local StartFlash, StopFlash, UpdateFlash, UpdateHotkeys, UpdateRangeTimer, UpdateOverlayGlow
@@ -1639,8 +1640,9 @@ function OnEvent(frame, event, arg1, ...)
 		ForAllButtons(Update, true)
 	elseif event == "ACTION_RANGE_CHECK_UPDATE" then
 		local slot, isInRange, checksRange = arg1, ...
-		for button in next, ActionButtons do
-			if button._state_action == slot then
+		local buttons = ButtonsByAction[slot]
+		if buttons then
+			for button in next, buttons do
 				UpdateRangeIndicator(button, isInRange, checksRange)
 			end
 		end
@@ -1895,8 +1897,15 @@ function Generic:UpdateAction(force)
 		self._state_action = action
 
 		-- set action attribute for action buttons
+		local previousAction = self.action
 		self.action = self._state_type == "action" and action or 0
 		if self.action ~= 0 then
+			-- track button by its action
+			if ButtonsByAction[self.action] == nil then
+				ButtonsByAction[self.action] = {}
+			end
+			ButtonsByAction[self.action][self] = true
+
 			if self.config.actionButtonUI then
 				C_ActionBar.RegisterActionUIButton(self, self.action, self.cooldown)
 			else
@@ -1906,7 +1915,15 @@ function Generic:UpdateAction(force)
 			C_ActionBar.EnableActionRangeCheck(self.action, true)
 		else
 			C_ActionBar.UnregisterActionUIButton(self)
-			C_ActionBar.EnableActionRangeCheck(self.action, false)
+		end
+
+		-- stop tracking under the previous action
+		if previousAction ~= self.action and ButtonsByAction[previousAction] then
+			ButtonsByAction[previousAction][self] = nil
+
+			if next(ButtonsByAction[previousAction]) == nil then
+				C_ActionBar.EnableActionRangeCheck(previousAction, false)
+			end
 		end
 
 		Update(self)
