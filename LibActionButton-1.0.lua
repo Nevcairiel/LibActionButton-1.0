@@ -76,6 +76,7 @@ lib.activeButtons = lib.activeButtons or {}
 lib.actionButtons = lib.actionButtons or {}
 lib.nonActionButtons = lib.nonActionButtons or {}
 lib.actionButtonsNonUI = lib.actionButtonsNonUI or {}
+lib.onUpdateButtons = lib.onUpdateButtons or {}
 
 lib.NumChargeCooldowns = lib.NumChargeCooldowns or 0
 
@@ -117,7 +118,7 @@ local type_meta_map = {
 	custom = Custom_MT
 }
 
-local ButtonRegistry, ActiveButtons, ActionButtons, NonActionButtons, ActionButtonsNonUI = lib.buttonRegistry, lib.activeButtons, lib.actionButtons, lib.nonActionButtons, lib.actionButtonsNonUI
+local ButtonRegistry, ActiveButtons, ActionButtons, NonActionButtons, ActionButtonsNonUI, OnUpdateButtons = lib.buttonRegistry, lib.activeButtons, lib.actionButtons, lib.nonActionButtons, lib.actionButtonsNonUI, lib.onUpdateButtons
 
 local Update, UpdateButtonState, UpdateUsable, UpdateCount, UpdateCooldown, UpdateCooldownNumberHidden, UpdateTooltip, UpdateNewAction, UpdateSpellHighlight, ClearNewActionHighlight, UpdateAssistedCombatRotationFrame, UpdatedAssistedHighlightFrame
 local StartFlash, StopFlash, UpdateFlash, UpdateHotkeys, UpdateRangeTimer, UpdateOverlayGlow
@@ -131,6 +132,7 @@ local SpellVFX_CastingAnim_OnHide, SpellVFX_CastingAnim_Finish_OnFinished
 local GetFlyoutHandler
 
 local InitializeEventHandler, OnEvent, ForAllButtons, ForAllButtonsWithSpell, OnUpdate
+local CheckNeedsUpdate
 
 local function GameTooltip_GetOwnerForbidden()
 	if GameTooltip:IsForbidden() then
@@ -244,6 +246,8 @@ function lib:CreateButton(id, name, header, config)
 	button:SetScript("PreClick", Generic.PreClick)
 	button:SetScript("PostClick", Generic.PostClick)
 	button:SetScript("OnEvent", Generic.OnButtonEvent)
+	button:SetScript("OnShow", Generic.OnShow)
+	button:SetScript("OnHide", Generic.OnHide)
 	button:SetScript("OnAttributeChanged", nil) -- inherited templates bring in a handler here which we don't want, so get rid of it
 
 	-- unwanted mixin functions, which we override through the metatable
@@ -1190,6 +1194,15 @@ function Generic:OnLeave()
 	GameTooltip:Hide()
 end
 
+function Generic:OnShow()
+	CheckNeedsUpdate(self)
+	Update(self)
+end
+
+function Generic:OnHide()
+	CheckNeedsUpdate(self)
+end
+
 -- Insecure drag handler to allow clicking on the button with an action on the cursor
 -- to place it on the button. Like action buttons work.
 function Generic:PreClick()
@@ -1552,7 +1565,7 @@ function OnEvent(frame, event, arg1, ...)
 		end
 	elseif event == "STOP_AUTOREPEAT_SPELL" then
 		for button in next, ActiveButtons do
-			if button.flashing == 1 and not button:IsAttack() then
+			if button.flashing and not button:IsAttack() then
 				StopFlash(button)
 			end
 		end
@@ -1668,23 +1681,50 @@ function OnEvent(frame, event, arg1, ...)
 	end
 end
 
-local flashTime = 0
 local rangeTimer = -1
 function OnUpdate(_, elapsed)
-	flashTime = flashTime - elapsed
-	rangeTimer = rangeTimer - elapsed
-	-- Run the loop only when there is something to update
-	if rangeTimer <= 0 or flashTime <= 0 then
-		for button in next, ActiveButtons do
-			-- Flashing
-			if button.flashing == 1 and flashTime <= 0 then
-				if button.Flash:IsShown() then
-					button.Flash:Hide()
+	-- update buttons which registered for updates
+	for button in next, OnUpdateButtons do
+		if button.stateDirty then
+			UpdateButtonState(button)
+			button.stateDirty = nil
+		end
+
+		if button.flashDirty then
+			UpdateFlash(button)
+			button.flashDirty = nil
+		end
+
+		if button.flashing then
+			local flashtime = button.flashtime
+			flashtime = flashtime - elapsed
+
+			if flashtime <= 0 then
+				local overtime = -flashtime
+				if overtime >= ATTACK_BUTTON_FLASH_TIME then
+					overtime = 0
+				end
+				flashtime = ATTACK_BUTTON_FLASH_TIME - overtime
+
+				local flashTexture = button.Flash
+				if flashTexture:IsShown() then
+					flashTexture:Hide()
 				else
-					button.Flash:Show()
+					flashTexture:Show()
 				end
 			end
 
+			button.flashtime = flashtime
+		end
+
+		-- check if updates are still needed
+		button:CheckNeedsUpdate()
+	end
+
+	rangeTimer = rangeTimer - elapsed
+	-- Run the loop only when there is something to update
+	if rangeTimer <= 0 then
+		for button in next, ActiveButtons do
 			-- Range
 			if rangeTimer <= 0 then
 				local inRange = button:IsInRange()
@@ -1713,9 +1753,6 @@ function OnUpdate(_, elapsed)
 		end
 
 		-- Update values
-		if flashTime <= 0 then
-			flashTime = flashTime + ATTACK_BUTTON_FLASH_TIME
-		end
 		if rangeTimer <= 0 then
 			rangeTimer = TOOLTIP_UPDATE_TIME
 		end
@@ -2178,14 +2215,26 @@ else
 	end
 end
 
+function CheckNeedsUpdate(self)
+	local needsUpdate = (self.stateDirty or self.flashDirty or self.flashing) and self:IsVisible()
+	if (needsUpdate ~= self.needsUpdate) then
+		if needsUpdate then
+			OnUpdateButtons[self] = true
+		else
+			OnUpdateButtons[self] = nil
+		end
+		self.needsUpdate = needsUpdate
+	end
+end
+
 function StartFlash(self)
 	self.flashing = 1
-	flashTime = 0
+	self.flashTime = 0
 	UpdateButtonState(self)
 end
 
 function StopFlash(self)
-	self.flashing = 0
+	self.flashing = nil
 	self.Flash:Hide()
 	UpdateButtonState(self)
 end
