@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 165
+local MINOR_VERSION = 166
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1506,7 +1506,7 @@ function OnEvent(frame, event, arg1, ...)
 		for button in next, ActiveButtons do
 			button.flashDirty = true
 			button.stateDirty = true
-			button:CheckNeedsUpdate()
+			CheckNeedsUpdate(button)
 		end
 	elseif event == "ACTIONBAR_UPDATE_STATE" then
 		for button in next, ActionButtonsNonUI do
@@ -1754,7 +1754,7 @@ function OnUpdate(_, elapsed)
 		end
 
 		-- check if updates are still needed
-		button:CheckNeedsUpdate()
+		CheckNeedsUpdate(button)
 	end
 
 	rangeTimer = rangeTimer - elapsed
