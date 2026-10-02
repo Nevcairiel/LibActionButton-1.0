@@ -132,7 +132,7 @@ local SpellVFX_CastingAnim_OnHide, SpellVFX_CastingAnim_Finish_OnFinished
 local GetFlyoutHandler
 
 local InitializeEventHandler, OnEvent, ForAllButtons, ForAllButtonsWithSpell, OnUpdate
-local CheckNeedsUpdate
+local CheckNeedsUpdate, UpdateRangeIndicator
 
 local function GameTooltip_GetOwnerForbidden()
 	if GameTooltip:IsForbidden() then
@@ -1358,6 +1358,7 @@ function InitializeEventHandler()
 	lib.eventFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 	lib.eventFrame:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
 	lib.eventFrame:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR")
+	lib.eventFrame:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
 
 	lib.eventFrame:RegisterEvent("ACTIONBAR_UPDATE_STATE")
 	lib.eventFrame:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
@@ -1636,6 +1637,13 @@ function OnEvent(frame, event, arg1, ...)
 		end
 	elseif event == "SPELL_UPDATE_ICON" then
 		ForAllButtons(Update, true)
+	elseif event == "ACTION_RANGE_CHECK_UPDATE" then
+		local slot, isInRange, checksRange = arg1, ...
+		for button in next, ActionButtons do
+			if button._state_action == slot then
+				UpdateRangeIndicator(button, isInRange, checksRange)
+			end
+		end
 	elseif event == "AssistedCombatManager.OnSetActionSpell" then
 		for button in next, ActiveButtons do
 			if button._state_type == "action" then
@@ -1735,37 +1743,41 @@ function OnUpdate(_, elapsed)
 	rangeTimer = rangeTimer - elapsed
 	-- Run the loop only when there is something to update
 	if rangeTimer <= 0 then
-		for button in next, ActiveButtons do
+		for button in next, NonActionButtons do
 			-- Range
 			if rangeTimer <= 0 then
-				local inRange = button:IsInRange()
-				local oldRange = button.outOfRange
-				button.outOfRange = (inRange == false)
-				if oldRange ~= button.outOfRange then
-					if button.config.outOfRangeColoring == "button" then
-						UpdateUsable(button)
-					elseif button.config.outOfRangeColoring == "hotkey" then
-						local hotkey = button.HotKey
-						if hotkey:GetText() == RANGE_INDICATOR then
-							if inRange == false then
-								hotkey:Show()
-							else
-								hotkey:Hide()
-							end
-						end
-						if inRange == false then
-							hotkey:SetVertexColor(unpack(button.config.colors.range))
-						else
-							hotkey:SetVertexColor(unpack(button.config.text.hotkey.color))
-						end
-					end
-				end
+				UpdateRangeIndicator(button, button:IsInRange(), false)
 			end
 		end
 
 		-- Update values
 		if rangeTimer <= 0 then
 			rangeTimer = TOOLTIP_UPDATE_TIME
+		end
+	end
+end
+
+function UpdateRangeIndicator(button, isInRange, checksRange)
+	local oldRange = button.outOfRange
+	button.outOfRange = (isInRange == false)
+
+	if oldRange ~= button.outOfRange then
+		if button.config.outOfRangeColoring == "button" then
+			UpdateUsable(button)
+		elseif button.config.outOfRangeColoring == "hotkey" then
+			local hotkey = button.HotKey
+			if hotkey:GetText() == RANGE_INDICATOR then
+				if isInRange == false or checksRange then
+					hotkey:Show()
+				else
+					hotkey:Hide()
+				end
+			end
+			if isInRange == false then
+				hotkey:SetVertexColor(unpack(button.config.colors.range))
+			else
+				hotkey:SetVertexColor(unpack(button.config.text.hotkey.color))
+			end
 		end
 	end
 end
@@ -1884,8 +1896,17 @@ function Generic:UpdateAction(force)
 
 		-- set action attribute for action buttons
 		self.action = self._state_type == "action" and action or 0
-		if self.config.actionButtonUI then
-			SetActionUIButton(self, self.action, self.cooldown)
+		if self.action ~= 0 then
+			if self.config.actionButtonUI then
+				C_ActionBar.RegisterActionUIButton(self, self.action, self.cooldown)
+			else
+				C_ActionBar.UnregisterActionUIButton(self)
+			end
+
+			C_ActionBar.EnableActionRangeCheck(self.action, true)
+		else
+			C_ActionBar.UnregisterActionUIButton(self)
+			C_ActionBar.EnableActionRangeCheck(self.action, false)
 		end
 
 		Update(self)
