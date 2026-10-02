@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 161
+local MINOR_VERSION = 162
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1357,14 +1357,14 @@ function InitializeEventHandler()
 	lib.eventFrame:RegisterEvent("PLAYER_LEAVE_COMBAT")
 	lib.eventFrame:RegisterEvent("START_AUTOREPEAT_SPELL")
 	lib.eventFrame:RegisterEvent("STOP_AUTOREPEAT_SPELL")
-	lib.eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	lib.eventFrame:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
 
 	lib.eventFrame:RegisterEvent("PET_STABLE_UPDATE")
 	lib.eventFrame:RegisterEvent("PET_STABLE_SHOW")
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_CHARGES")
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_ICON")
-	lib.eventFrame:RegisterEvent("UNIT_ENTERED_VEHICLE")
-	lib.eventFrame:RegisterEvent("UNIT_EXITED_VEHICLE")
+	lib.eventFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
+	lib.eventFrame:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
 	lib.eventFrame:RegisterEvent("ARCHAEOLOGY_CLOSED")
 	lib.eventFrame:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
 	lib.eventFrame:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
@@ -1378,8 +1378,8 @@ function InitializeEventHandler()
 	lib.eventFrame:RegisterEvent("SPELL_UPDATE_USABLE")
 	lib.eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 
-	lib.eventFrame:RegisterEvent("LOSS_OF_CONTROL_ADDED")
-	lib.eventFrame:RegisterEvent("LOSS_OF_CONTROL_UPDATE")
+	lib.eventFrame:RegisterUnitEvent("LOSS_OF_CONTROL_ADDED", "player")
+	lib.eventFrame:RegisterUnitEvent("LOSS_OF_CONTROL_UPDATE", "player")
 
 	if Feat_ButtonCastBars then
 		lib.eventFrame:RegisterEvent("UNIT_SPELLCAST_SENT")
