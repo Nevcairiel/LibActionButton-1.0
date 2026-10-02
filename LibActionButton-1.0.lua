@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ]]
 local MAJOR_VERSION = "LibActionButton-1.0"
-local MINOR_VERSION = 167
+local MINOR_VERSION = 168
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
@@ -1657,8 +1657,11 @@ function OnEvent(frame, event, arg1, ...)
 		local slot, isInRange, checksRange = arg1, ...
 		local buttons = ButtonsByAction[slot]
 		if buttons then
+			-- translate to three stage range value (nil for no range, true/false for in/out of range)
+			local inRange
+			if checksRange then inRange = isInRange end
 			for button in next, buttons do
-				UpdateRangeIndicator(button, isInRange, checksRange)
+				UpdateRangeIndicator(button, inRange)
 			end
 		end
 	elseif event == "AssistedCombatManager.OnSetActionSpell" then
@@ -1763,7 +1766,7 @@ function OnUpdate(_, elapsed)
 		for button in next, NonActionButtons do
 			-- Range
 			if rangeTimer <= 0 then
-				UpdateRangeIndicator(button, button:IsInRange(), false)
+				UpdateRangeIndicator(button, button:IsInRange())
 			end
 		end
 
@@ -1774,7 +1777,7 @@ function OnUpdate(_, elapsed)
 	end
 end
 
-function UpdateRangeIndicator(button, isInRange, checksRange)
+function UpdateRangeIndicator(button, isInRange)
 	local oldRange = button.outOfRange
 	button.outOfRange = (isInRange == false)
 
@@ -1784,7 +1787,7 @@ function UpdateRangeIndicator(button, isInRange, checksRange)
 		elseif button.config.outOfRangeColoring == "hotkey" then
 			local hotkey = button.HotKey
 			if hotkey:GetText() == RANGE_INDICATOR then
-				if isInRange == false or checksRange then
+				if isInRange == false then
 					hotkey:Show()
 				else
 					hotkey:Hide()
